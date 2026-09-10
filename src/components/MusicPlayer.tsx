@@ -12,10 +12,9 @@ function formatTime(seconds: number): string {
 }
 
 export default function MusicPlayer() {
-  // Hide entire section if disabled
-  if (!portfolioData.music.enabled) return null
-
   const playlist = portfolioData.music.playlist
+
+  // ===== ALL HOOKS FIRST (no early returns above this line) =====
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -60,6 +59,21 @@ export default function MusicPlayer() {
     }
   }, [volume, isMuted])
 
+  // ===== EARLY RETURN IS OK NOW (after all hooks) =====
+  if (!portfolioData.music.enabled) return null
+
+  // If no songs, show a placeholder
+  if (playlist.length === 0) {
+    return (
+      <section id="music" className="py-20 px-4" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+        <div className="max-w-3xl mx-auto text-center">
+          <Music size={48} className="mx-auto mb-4" style={{ color: 'var(--accent)' }} />
+          <p style={{ color: 'var(--text-secondary)' }}>No music added yet.</p>
+        </div>
+      </section>
+    )
+  }
+
   const togglePlay = () => setIsPlaying((p) => !p)
 
   const playNext = () => {
@@ -97,18 +111,6 @@ export default function MusicPlayer() {
     } else {
       setIsPlaying(false)
     }
-  }
-
-  // If no songs, show a placeholder
-  if (playlist.length === 0) {
-    return (
-      <section id="music" className="py-20 px-4" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-        <div className="max-w-3xl mx-auto text-center">
-          <Music size={48} className="mx-auto mb-4" style={{ color: 'var(--accent)' }} />
-          <p style={{ color: 'var(--text-secondary)' }}>No music added yet.</p>
-        </div>
-      </section>
-    )
   }
 
   return (

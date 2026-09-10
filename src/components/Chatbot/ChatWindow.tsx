@@ -28,6 +28,13 @@ export default function ChatWindow({ onClose }: Props) {
   const [isTyping, setIsTyping] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  // Counter for unique IDs. Refs are stable across renders and safe to mutate in handlers.
+  const idCounter = useRef(0)
+  const nextId = (prefix: string) => {
+    idCounter.current += 1
+    return `${prefix}-${idCounter.current}`
+  }
+
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
@@ -38,7 +45,7 @@ export default function ChatWindow({ onClose }: Props) {
     if (!trimmed || isTyping) return
 
     const userMsg: ChatMessageType = {
-      id: `user-${Date.now()}`,
+      id: nextId('user'),
       role: 'user',
       content: trimmed,
     }
@@ -49,7 +56,7 @@ export default function ChatWindow({ onClose }: Props) {
     try {
       const reply = await getAIResponse(trimmed)
       const aiMsg: ChatMessageType = {
-        id: `ai-${Date.now()}`,
+        id: nextId('ai'),
         role: 'assistant',
         content: reply,
       }
@@ -58,7 +65,7 @@ export default function ChatWindow({ onClose }: Props) {
       setMessages((prev) => [
         ...prev,
         {
-          id: `err-${Date.now()}`,
+          id: nextId('err'),
           role: 'assistant',
           content: 'Sorry, something went wrong. Please try again.',
         },
@@ -73,7 +80,7 @@ export default function ChatWindow({ onClose }: Props) {
       {
         id: 'welcome',
         role: 'assistant',
-        content: "Chat cleared. How can I help?",
+        content: 'Chat cleared. How can I help?',
       },
     ])
   }
