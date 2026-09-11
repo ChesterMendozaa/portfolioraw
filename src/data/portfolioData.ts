@@ -71,32 +71,34 @@ export interface PortfolioData {
 
 const portfolioData: PortfolioData = {
   // ===== BASIC INFO =====
-  name: '[YOUR NAME]',
-  role: '[YOUR ROLE]',
-  bio: '[YOUR BIO]',
-  shortIntro: '[YOUR SHORT INTRODUCTION]',
-  location: '[YOUR LOCATION]',
-  email: '[YOUR EMAIL]',
+  name: 'Chester Mendoza',
+  role: 'Web Developer',
+  bio: 'SHORT THINGS ABOUT ME',
+  shortIntro: 'intro',
+  location: 'Bay, Laguna',
+  email: 'Chesterm560@gmail.com',
   profilePhoto: '/images/profile.jpg',
-  resumeUrl: '[YOUR RESUME]',
-  currentFocus: '[YOUR CURRENT FOCUS]',
-  goals: '[YOUR GOALS]',
-  educationSummary: '[YOUR EDUCATION]',
+  resumeUrl: 'no resume',
+  currentFocus: 'Focus ako sa goal ko',
+  goals: 'my goal is to drink a different types of alchohol',
+  educationSummary: 'Currently pursuing a degree in Information Technology at LSPU-LB',
 
   // ===== SOCIAL LINKS =====
   socialLinks: {
-    github: '[YOUR GITHUB]',
-    linkedin: '[YOUR LINKEDIN]',
-    facebook: '[YOUR FACEBOOK]',
+    github: 'https://github.com/ChesterMendozaa',
+    linkedin: '#',
+    facebook: 'https://www.facebook.com/chesterrrzzz',
   },
 
   // ===== SKILLS =====
   skills: [
-    { name: '[SKILL NAME]', level: 80, category: 'Frontend' },
-    { name: '[SKILL NAME]', level: 70, category: 'Frontend' },
-    { name: '[SKILL NAME]', level: 65, category: 'Backend' },
-    { name: '[SKILL NAME]', level: 75, category: 'Database' },
-    { name: '[SKILL NAME]', level: 85, category: 'Tools' },
+    { name: 'JavaScript', level: 80, category: 'Frontend' },
+    { name: 'TypeScript', level: 70, category: 'Frontend' },
+    { name: 'Node.js', level: 65, category: 'Backend' },
+    { name: 'SQL', level: 75, category: 'Database' },
+    { name: 'MongoDB', level: 40, category: 'Database' },
+    { name: 'Git', level: 85, category: 'Tools' },
+    { name: 'Figma', level: 85, category: 'Tools' },
   ],
 
   // ===== PROJECTS =====
@@ -114,11 +116,23 @@ const portfolioData: PortfolioData = {
   // ===== EDUCATION =====
   education: [
     {
-      degree: '[DEGREE]',
-      school: '[SCHOOL]',
-      year: '[YEAR]',
-      description: '[DESCRIPTION]',
+      degree: 'Bachelor of Science in Information Technology',
+      school: 'LSPU-LB',
+      year: '2023 - 2027',
+      description: 'Pursuing a degree in Information Technology with a focus on web development.',
     },
+    {
+      degree: 'Senior High School',
+      school: 'Colegio De Los Banos',
+      year: '2021 - 2023',
+      description: 'Completed senior high school with a focus on GAS.',
+    },
+    {
+      degree: 'Junior High School',
+      school: 'Los Banos National High School',
+      year: '2017 - 2021',
+      description: 'Completed junior high school',
+    }
   ],
 
   // ===== EXPERIENCE =====
@@ -127,10 +141,10 @@ const portfolioData: PortfolioData = {
     enabled: true,
     items: [
       {
-        position: '[POSITION]',
-        company: '[COMPANY]',
-        date: '[DATE]',
-        description: '[DESCRIPTION]',
+        position: 'None',
+        company: 'None',
+        date: 'None',
+        description: 'No experience yet, but eager to learn and grow in the field of web development.',
       },
     ],
   },
@@ -141,8 +155,8 @@ const portfolioData: PortfolioData = {
     enabled: true,
     playlist: [
       {
-        title: '[SONG TITLE]',
-        artist: '[ARTIST NAME]',
+        title: 'On Bended Knee',
+        artist: 'Boyz II Men',
         src: '/music/my-song.mp3',
         cover: '/images/album-cover.jpg',
       },

@@ -1,5 +1,6 @@
 // src/components/Footer.tsx
-import { Github, Linkedin, Facebook, Mail } from 'lucide-react'
+import { Mail } from 'lucide-react'
+import { FaGithub, FaLinkedin, FaFacebookF } from 'react-icons/fa6'
 import portfolioData from '../data/portfolioData'
 
 export default function Footer() {
@@ -23,7 +24,7 @@ export default function Footer() {
             aria-label="GitHub"
             className="hover:opacity-70"
           >
-            <Github size={18} />
+            <FaGithub size={18} />
           </a>
           <a
             href={portfolioData.socialLinks.linkedin}
@@ -32,7 +33,7 @@ export default function Footer() {
             aria-label="LinkedIn"
             className="hover:opacity-70"
           >
-            <Linkedin size={18} />
+            <FaLinkedin size={18} />
           </a>
           <a
             href={portfolioData.socialLinks.facebook}
@@ -41,7 +42,7 @@ export default function Footer() {
             aria-label="Facebook"
             className="hover:opacity-70"
           >
-            <Facebook size={18} />
+            <FaFacebookF size={18} />
           </a>
           <a
             href={`mailto:${portfolioData.email}`}

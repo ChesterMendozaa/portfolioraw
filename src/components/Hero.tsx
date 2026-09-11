@@ -1,6 +1,7 @@
 // src/components/Hero.tsx
 import { motion } from 'framer-motion'
-import { Github, Linkedin, Mail, ArrowRight, Facebook } from 'lucide-react'
+import { Mail, ArrowRight } from 'lucide-react'
+import { FaGithub, FaLinkedin, FaFacebookF } from 'react-icons/fa6'
 import portfolioData from '../data/portfolioData'
 
 export default function Hero() {
@@ -71,7 +72,7 @@ export default function Hero() {
               className="p-2 rounded-lg border transition-colors hover:opacity-70"
               style={{ borderColor: 'var(--border)', color: 'var(--text-primary)' }}
             >
-              <Github size={20} />
+              <FaGithub size={20} />
             </a>
             <a
               href={portfolioData.socialLinks.linkedin}
@@ -81,7 +82,7 @@ export default function Hero() {
               className="p-2 rounded-lg border transition-colors hover:opacity-70"
               style={{ borderColor: 'var(--border)', color: 'var(--text-primary)' }}
             >
-              <Linkedin size={20} />
+              <FaLinkedin size={20} />
             </a>
             <a
               href={portfolioData.socialLinks.facebook}
@@ -91,7 +92,7 @@ export default function Hero() {
               className="p-2 rounded-lg border transition-colors hover:opacity-70"
               style={{ borderColor: 'var(--border)', color: 'var(--text-primary)' }}
             >
-              <Facebook size={20} />
+              <FaFacebookF size={20} />
             </a>
             <a
               href={`mailto:${portfolioData.email}`}

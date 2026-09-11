@@ -4,8 +4,13 @@ import { motion } from 'framer-motion'
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music } from 'lucide-react'
 import portfolioData from '../data/portfolioData'
 
+// How long the fade lasts in milliseconds
+const FADE_DURATION = 500
+// How often the fade updates (smaller = smoother, more renders)
+const FADE_INTERVAL = 20
+
 function formatTime(seconds: number): string {
-  if (!isFinite(seconds)) return '0:00'
+  if (!isFinite(seconds) || seconds < 0) return '0:00'
   const m = Math.floor(seconds / 60)
   const s = Math.floor(seconds % 60)
   return `${m}:${s.toString().padStart(2, '0')}`
@@ -14,7 +19,7 @@ function formatTime(seconds: number): string {
 export default function MusicPlayer() {
   const playlist = portfolioData.music.playlist
 
-  // ===== ALL HOOKS FIRST (no early returns above this line) =====
+  // ===== ALL HOOKS FIRST =====
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -25,44 +30,106 @@ export default function MusicPlayer() {
   const [error, setError] = useState<string | null>(null)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  // Track an active fade so we can cancel it if the user spams play/pause
+  const fadeRef = useRef<number | null>(null)
   const currentSong = playlist[currentIndex]
 
-  // Load new song when index changes
+  // Target volume (what the user set). When muted, target is 0.
+  const targetVolume = isMuted ? 0 : volume
+
+  // ===== FADE HELPERS =====
+
+  const cancelFade = () => {
+    if (fadeRef.current !== null) {
+      window.clearInterval(fadeRef.current)
+      fadeRef.current = null
+    }
+  }
+
+  /**
+   * Smoothly ramp audio.volume from startVol to endVol over FADE_DURATION ms.
+   * Calls onComplete when done.
+   */
+  const fadeTo = (startVol: number, endVol: number, onComplete?: () => void) => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    cancelFade()
+
+    const steps = Math.max(1, Math.floor(FADE_DURATION / FADE_INTERVAL))
+    let step = 0
+    audio.volume = startVol
+
+    fadeRef.current = window.setInterval(() => {
+      step += 1
+      const t = step / steps
+      // Linear interpolation — simple and predictable
+      audio.volume = Math.min(1, Math.max(0, startVol + (endVol - startVol) * t))
+
+      if (step >= steps) {
+        audio.volume = endVol
+        cancelFade()
+        onComplete?.()
+      }
+    }, FADE_INTERVAL)
+  }
+
+  // ===== LOAD NEW SONG WHEN INDEX CHANGES =====
   useEffect(() => {
     const audio = audioRef.current
     if (!audio || !currentSong) return
     setError(null)
     setIsLoading(true)
+    // Start each new song at volume 0 so we can fade in cleanly
+    audio.volume = 0
     audio.src = currentSong.src
     audio.load()
   }, [currentIndex, currentSong])
 
-  // Handle play/pause state changes
+  // ===== PLAY / PAUSE with FADE =====
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
 
     if (isPlaying) {
-      audio.play().catch(() => {
-        setError('Could not play audio. Check the file path.')
-        setIsPlaying(false)
-      })
+      // Fade IN from current volume (usually 0 on a fresh load) to target
+      audio
+        .play()
+        .then(() => {
+          fadeTo(audio.volume, targetVolume)
+        })
+        .catch(() => {
+          setError('Could not play audio. Check the file path.')
+          setIsPlaying(false)
+        })
     } else {
-      audio.pause()
+      // Fade OUT then pause
+      fadeTo(audio.volume, 0, () => {
+        audio.pause()
+      })
     }
+
+    return () => cancelFade()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying])
 
-  // Volume
+  // ===== VOLUME CHANGES (when not fading) =====
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = isMuted ? 0 : volume
-    }
-  }, [volume, isMuted])
+    const audio = audioRef.current
+    if (!audio || !isPlaying) return
+    // If we're actively fading, don't stomp on it
+    if (fadeRef.current !== null) return
+    audio.volume = targetVolume
+  }, [volume, isMuted, isPlaying, targetVolume])
 
-  // ===== EARLY RETURN IS OK NOW (after all hooks) =====
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => cancelFade()
+  }, [])
+
+  // ===== EARLY RETURNS (after all hooks) =====
   if (!portfolioData.music.enabled) return null
 
-  // If no songs, show a placeholder
   if (playlist.length === 0) {
     return (
       <section id="music" className="py-20 px-4" style={{ backgroundColor: 'var(--bg-secondary)' }}>
@@ -74,14 +141,17 @@ export default function MusicPlayer() {
     )
   }
 
+  // ===== CONTROLS =====
   const togglePlay = () => setIsPlaying((p) => !p)
 
   const playNext = () => {
+    cancelFade()
     setCurrentIndex((i) => (i + 1) % playlist.length)
     setIsPlaying(true)
   }
 
   const playPrev = () => {
+    cancelFade()
     setCurrentIndex((i) => (i - 1 + playlist.length) % playlist.length)
     setIsPlaying(true)
   }
@@ -106,12 +176,17 @@ export default function MusicPlayer() {
   }
 
   const handleEnded = () => {
+    // No fade at the end — just go to next (or stop)
     if (playlist.length > 1) {
       playNext()
     } else {
       setIsPlaying(false)
     }
   }
+
+  // Percentages for the slider fills
+  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0
+  const volumePercent = (isMuted ? 0 : volume) * 100
 
   return (
     <section id="music" className="py-20 px-4" style={{ backgroundColor: 'var(--bg-secondary)' }}>
@@ -137,56 +212,67 @@ export default function MusicPlayer() {
             <motion.img
               src={currentSong.cover}
               alt={`${currentSong.title} album cover`}
-              className="w-48 h-48 rounded-xl object-cover shadow-lg"
+              className="w-48 h-48 rounded-xl object-cover shadow-lg flex-shrink-0"
               animate={{ rotate: isPlaying ? 360 : 0 }}
               transition={{ duration: 20, repeat: isPlaying ? Infinity : 0, ease: 'linear' }}
               loading="lazy"
             />
 
             {/* Player info */}
-            <div className="flex-1 w-full">
-              <h3 className="text-xl font-bold mb-1">{currentSong.title}</h3>
-              <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+            <div className="flex-1 w-full min-w-0">
+              <h3 className="text-xl font-bold mb-1 truncate">{currentSong.title}</h3>
+              <p className="text-sm mb-6 truncate" style={{ color: 'var(--text-secondary)' }}>
                 {currentSong.artist}
               </p>
 
-              {/* Progress bar */}
+              {/* Progress bar with time labels */}
               <div className="mb-4">
-                <input
-                  type="range"
-                  min={0}
-                  max={duration || 0}
-                  value={currentTime}
-                  onChange={handleSeek}
-                  className="w-full h-1 rounded-lg appearance-none cursor-pointer"
-                  style={{ accentColor: 'var(--accent)' }}
-                  aria-label="Seek"
-                />
-                <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
-                  <span>{formatTime(currentTime)}</span>
-                  <span>{formatTime(duration)}</span>
+                <div className="flex items-center gap-3">
+                  <span
+                    className="text-xs tabular-nums w-10 text-right"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    {formatTime(currentTime)}
+                  </span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={duration || 0}
+                    step={0.1}
+                    value={currentTime}
+                    onChange={handleSeek}
+                    className="slider flex-1"
+                    style={{ ['--slider-progress' as string]: `${progressPercent}%` }}
+                    aria-label="Seek"
+                  />
+                  <span
+                    className="text-xs tabular-nums w-10"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    {formatTime(duration)}
+                  </span>
                 </div>
               </div>
 
               {/* Controls */}
-              <div className="flex items-center justify-center gap-4 mb-4">
+              <div className="flex items-center justify-center gap-4 mb-5">
                 <button
                   onClick={playPrev}
                   disabled={playlist.length <= 1}
                   className="p-2 rounded-lg hover:opacity-70 disabled:opacity-30"
                   aria-label="Previous song"
                 >
-                  <SkipBack size={20} />
+                  <SkipBack size={22} />
                 </button>
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={togglePlay}
                   disabled={isLoading}
-                  className="p-4 rounded-full text-white disabled:opacity-50"
+                  className="p-4 rounded-full text-white disabled:opacity-50 shadow-md"
                   style={{ backgroundColor: 'var(--accent)' }}
                   aria-label={isPlaying ? 'Pause' : 'Play'}
                 >
-                  {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+                  {isPlaying ? <Pause size={26} /> : <Play size={26} />}
                 </motion.button>
                 <button
                   onClick={playNext}
@@ -194,18 +280,19 @@ export default function MusicPlayer() {
                   className="p-2 rounded-lg hover:opacity-70 disabled:opacity-30"
                   aria-label="Next song"
                 >
-                  <SkipForward size={20} />
+                  <SkipForward size={22} />
                 </button>
               </div>
 
               {/* Volume */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setIsMuted(!isMuted)}
-                  className="p-1"
+                  className="p-1.5 rounded-lg hover:opacity-70 flex-shrink-0"
                   aria-label={isMuted ? 'Unmute' : 'Mute'}
+                  style={{ color: 'var(--text-primary)' }}
                 >
-                  {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                  {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
                 </button>
                 <input
                   type="range"
@@ -217,10 +304,16 @@ export default function MusicPlayer() {
                     setVolume(Number(e.target.value))
                     setIsMuted(false)
                   }}
-                  className="flex-1 h-1 rounded-lg appearance-none cursor-pointer"
-                  style={{ accentColor: 'var(--accent)' }}
+                  className="slider flex-1"
+                  style={{ ['--slider-progress' as string]: `${volumePercent}%` }}
                   aria-label="Volume"
                 />
+                <span
+                  className="text-xs tabular-nums w-10 text-right"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  {Math.round((isMuted ? 0 : volume) * 100)}%
+                </span>
               </div>
 
               {/* Error state */}
@@ -243,7 +336,7 @@ export default function MusicPlayer() {
               <h4 className="font-semibold mb-3 text-sm">Playlist</h4>
               <ul className="space-y-2">
                 {playlist.map((song, i) => (
-                  <li key={song.title}>
+                  <li key={`${song.title}-${i}`}>
                     <button
                       onClick={() => {
                         setCurrentIndex(i)

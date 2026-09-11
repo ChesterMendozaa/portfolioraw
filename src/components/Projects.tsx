@@ -1,6 +1,6 @@
-// src/components/Projects.tsx
 import { motion } from 'framer-motion'
-import { Github, ExternalLink } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
+import { FaGithub } from 'react-icons/fa6'
 import portfolioData from '../data/portfolioData'
 
 export default function Projects() {
@@ -66,7 +66,7 @@ export default function Projects() {
                     className="inline-flex items-center gap-1 text-sm font-medium hover:opacity-70"
                     style={{ color: 'var(--accent)' }}
                   >
-                    <Github size={16} /> Code
+                    <FaGithub size={16} /> Code
                   </a>
                   <a
                     href={project.demo}

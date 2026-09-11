@@ -1,7 +1,8 @@
 // src/components/Contact.tsx
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Mail, Send, Check, MapPin, Github, Linkedin, Facebook } from 'lucide-react'
+import { Mail, Send, Check, MapPin } from 'lucide-react'
+import { FaGithub, FaLinkedin, FaFacebookF } from 'react-icons/fa6'
 import portfolioData from '../data/portfolioData'
 
 interface FormState {
@@ -96,7 +97,7 @@ export default function Contact() {
                 style={{ borderColor: 'var(--border)' }}
                 aria-label="GitHub"
               >
-                <Github size={20} />
+                <FaGithub size={20} />
               </a>
               <a
                 href={portfolioData.socialLinks.linkedin}
@@ -106,7 +107,7 @@ export default function Contact() {
                 style={{ borderColor: 'var(--border)' }}
                 aria-label="LinkedIn"
               >
-                <Linkedin size={20} />
+                <FaLinkedin size={20} />
               </a>
               <a
                 href={portfolioData.socialLinks.facebook}
@@ -116,7 +117,7 @@ export default function Contact() {
                 style={{ borderColor: 'var(--border)' }}
                 aria-label="Facebook"
               >
-                <Facebook size={20} />
+                <FaFacebookF size={20} />
               </a>
             </div>
           </motion.div>
