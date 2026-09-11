@@ -104,12 +104,12 @@ const portfolioData: PortfolioData = {
   // ===== PROJECTS =====
   projects: [
     {
-        title: 'My App',
-        description: 'A cool app I built',
+        title: 'Portfolio Website',
+        description: 'This is design to showcase my skills and projects as a web developer.',
         image: '/images/my-project.jpg',
         technologies: ['React', 'TypeScript'],
         github: 'https://github.com/ChesterMendozaa/portfolioraw.git',
-        demo: 'https://myapp.com',
+        demo: 'http://localhost:5173/',
     },
   ],
 
@@ -117,7 +117,7 @@ const portfolioData: PortfolioData = {
   education: [
     {
       degree: 'Bachelor of Science in Information Technology',
-      school: 'LSPU-LB',
+      school: 'Laguna State Polytechnic University - Los Baños',
       year: '2023 - 2027',
       description: 'Pursuing a degree in Information Technology with a focus on web development.',
     },
